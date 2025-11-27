@@ -43,27 +43,28 @@ def install_ffmpeg_mac():
     print_install_message()
     print("Checking Homebrew for FFmpeg...")
 
-    # Homebrew kurulu mu kontrol et
     brew_check = subprocess.run(["brew", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if brew_check.returncode != 0:
         print("\nHomebrew is not installed! Please install it manually with this command:\n")
         print('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"')
         sys.exit(1)
 
-    # FFmpeg kurulu mu kontrol
     ffmpeg_check = subprocess.run(["ffmpeg", "-version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if ffmpeg_check.returncode != 0:
         print("Installing FFmpeg via Homebrew...")
         subprocess.run(["brew", "install", "ffmpeg"], check=True)
+
     return "ffmpeg"
 
 def convert_mp4_to_mp3(ffmpeg_path, input_path, output_path):
     command = [
         ffmpeg_path,
         "-i", input_path,
-        "-vn",
+        "-map", "0:a",       # tüm ses akışlarını al
+        "-vn",               # video yok
         "-acodec", "libmp3lame",
         "-ab", "192k",
+        "-y",                # varsa üstüne yaz
         output_path
     ]
     try:
@@ -73,7 +74,7 @@ def convert_mp4_to_mp3(ffmpeg_path, input_path, output_path):
         print(f"❌ Failed to convert: {os.path.basename(input_path)}")
 
 def main():
-    ffmpeg_path = "ffmpeg"  # Default
+    ffmpeg_path = "ffmpeg"  # default
 
     # FFmpeg kontrolü
     if not ffmpeg_exists():
